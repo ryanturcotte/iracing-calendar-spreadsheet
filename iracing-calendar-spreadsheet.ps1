@@ -3,6 +3,7 @@
 
 # Easy variable to set the default json file to use every season
 $defaultJSONPath = ".\jsons\season-series-25s1.json"
+$defaultOutputPath = ".\outputs\output.csv"
 function trackNameMinimizer ($trackName) {
     # Take a track name and run a variety of replace functionality to minimize the name
 
@@ -39,6 +40,7 @@ function trackNameMinimizer ($trackName) {
         @{ Key = "MotorLand Aragón"; Value = "Aragon" }
 
         # General wording replacements
+        # Some of these are probably superfluous with all the above tracks
         @{ Key = " International Circuit"; Value = "" }
         @{ Key = " Racing Circuit"; Value = "" }
         @{ Key = " Motorsenter"; Value = "" }
@@ -73,6 +75,7 @@ function trackConfigMinimizer ($trackConfig) {
     # Take a track config and run a variety of replace functionality to minimize the name
 
     # Define the replacement map
+    # This is done in the original hashtable method, could be changed later
     $replacements = @{
         "International" = "Intl"
         "Grand Prix"   = "GP"
@@ -87,10 +90,9 @@ function trackConfigMinimizer ($trackConfig) {
     
     # For the track config input, perform replacements from above map
     foreach ($key in $replacements.Keys) {
-    $trackConfig = $trackConfig -replace [regex]::Escape($key), $replacements[$key]
+        $trackConfig = $trackConfig -replace [regex]::Escape($key), $replacements[$key]
     }
 
-    # Output the result
     Write-Output $trackConfig
 
 }
@@ -121,8 +123,8 @@ function scheduleTimeMinimizer ($scheduleTime) {
         $scheduleTime = $scheduleTime -replace [regex]::Escape($replacement.Key), $replacement.Value
     }
 
-    # Output the result
-    Write-Output $scheduleTime
+    return $scheduleTime
+
 }
 
 function getProperTrackName ($trackObject) {
@@ -134,7 +136,7 @@ function getProperTrackName ($trackObject) {
     $trackBase = trackNameMinimizer($trackObject.track.track_name)
     $trackFinalName = ""
 
-    # if track has a config name, add it to track name, else use basic track name
+    # if track has a config name, add it to track name, else use trackNameMinimizer output
     if ($track.track.config_name) { 
         $trackConfigShort = trackConfigMinimizer($track.track.config_name)
         $trackFinalName = $trackBase + " " + $trackConfigShort
@@ -149,7 +151,8 @@ function getProperTrackName ($trackObject) {
 function specialSeriesConfig ($track) {
 
     # If track name contains Ringmeister, return the cars instead of the track
-    # We are being lazy and only grabbing the 1st car to fit in a cell
+    # We are being lazy and only grabbing the 1st car to fit the cell
+    # Future code could check for GT3, GT4, etc. and return that.
     if ($track.season_name -like "*Ring Meister*") {
 
         $car = $track.race_week_cars[0].car_name
@@ -205,6 +208,7 @@ function GUI () {
     $jsonFilePathLabel.Size = New-Object System.Drawing.Size(200,20)
     $jsonFilePathLabel.Text = 'JSON file path:'
     $form.Controls.Add($jsonFilePathLabel)
+
     $jsonFilePathTextBox = New-Object System.Windows.Forms.TextBox
     $jsonFilePathTextBox.Location = New-Object System.Drawing.Point(10,40)
     $jsonFilePathTextBox.Size = New-Object System.Drawing.Size(300,20)
@@ -218,6 +222,8 @@ function GUI () {
     $browseButton.Text = 'Browse'
     $form.Controls.Add($browseButton)
     $browseButton.Add_Click({
+        # When clicking the browse button, open a file dialog to select the JSON file
+
         $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
         $openFileDialog.Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*"
         $openFileDialog.Title = "Select JSON File"
@@ -250,7 +256,7 @@ function GUI () {
     $form.Controls.Add($seriesListBox)
 
     # If a default JSON file is set, populate the series list box, to save time
-    if ($defaultJSONPath) {
+    if (Test-Path $defaultJSONPath) {
         $jsonFilePathTextBox.Text = $defaultJSONPath
         $jsonData = Get-Content $defaultJSONPath | ConvertFrom-Json
         populateSeriesListBox
@@ -285,7 +291,12 @@ function GUI () {
     $outputFilePathTextBox = New-Object System.Windows.Forms.TextBox
     $outputFilePathTextBox.Location = New-Object System.Drawing.Point(300,410)
     $outputFilePathTextBox.Size = New-Object System.Drawing.Size(300,20)
-    $outputFilePathTextBox.Text = "Select output file >"
+    if (Test-Path $defaultOutputPath) {
+        $outputFilePathTextBox.Text = $defaultOutputPath
+    }
+    else {
+        $outputFilePathTextBox.Text = "Select output file >"
+    }
     $form.Controls.Add($outputFilePathTextBox)
 
     # Button to browse for output file path
@@ -327,12 +338,18 @@ function GUI () {
         # Use the checkedItems variable
         $checkedItems = @()
         $seriesToExport = @()
+
+        # If the allSeriesCheckbox is checked, just put all series into checkedItems
         if ($allSeriesCheckbox.Checked) {
             $checkedItems = $seriesListBox.Items
         }
+        # Otherwise, only put the checked items into checkedItems
         else {
+        
             $checkedItems = $seriesListBox.CheckedItems
         }
+
+        # Not really sure if this is needed?? But lets not break it while it's working.
         foreach ($item in $checkedItems) {
             $seriesToExport += $item
         }
@@ -348,8 +365,6 @@ function GUI () {
         # Error checking for the $jsonData variable
         if ($null -eq $selectedSeries) {
             $trackTextBox.AppendText("Error selecting series.`r`n")
-            $trackTextBox.AppendText("Outputting JSON info for testing.`r`n")
-            $trackTextBox.AppendText($jsonData)
         }
         # Ring Meister series
         elseif ($selectedSeries.season_name -like "*Ring Meister*") {
@@ -432,7 +447,8 @@ function createSeriesCSV ($selectedSeries) {
                 # iterate on track list
                 foreach ($track in $series.schedules) {
 
-                    # Special case for Ringmeister series, return cars instead of tracks
+                    # Special case for Ring Meister series, return cars instead of tracks
+                    # Can combine Ring Meister and Draft Masters... not sure why I separated them
                     if ($series.season_name -like "*Ring Meister*") {
                         $trackFull = specialSeriesConfig($track)
                     }
@@ -506,4 +522,5 @@ function createSeriesCSV ($selectedSeries) {
 
 # run GUI
 # GUI should then run the createSeriesCSV function which makes the magic
+# justPowerShellThings
 GUI
