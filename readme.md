@@ -2,6 +2,10 @@
 
 This PowerShell program scrapes a JSON of iRacing season series data and presents a GUI of all the series available, with the goal to output selected ones to a CSV. A XLSX template is provided that can present 8 series on 1 landscape page. By copying data from the CSV to the included XLSX template, you can build a 12 week iRacing schedule fit for printing in a matter of minutes.
 
+## Example
+
+![Screenshot of an example spreadsheet made by the iRacing Calendar Spreadsheet Creator.](/example-image-2025S1.jpg)
+
 ## Requirements
 
 - [Powershell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5)
