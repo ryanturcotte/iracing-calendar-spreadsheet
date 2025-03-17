@@ -2,7 +2,7 @@
 # Takes existing series json from the iRacing web API and converts it into a table prepared for excel sheet template
 
 # Variable to set the default json and output file to use every season
-$defaultJSONPath = ".\jsons\season-series-25s1.json"
+$defaultJSONPath = ".\jsons\season-series-25s2.json"
 $defaultOutputPath = ".\outputs\output.csv"
 function trackNameMinimizer ($trackName) {
     # Take a track name and run a variety of replace functionality to minimize the name
