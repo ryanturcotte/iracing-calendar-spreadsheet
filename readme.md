@@ -6,7 +6,7 @@ This PowerShell program scrapes a JSON of iRacing season series data and present
 
 ![Screenshot of an example spreadsheet made by the iRacing Calendar Spreadsheet Creator](/example-image-2025S1.jpg)
 
-[Link to video demonstration on youtube](https://youtu.be/F5Q6mU_Za7M)
+[Link to video demonstration on youtube](https://youtu.be/bCKcjZnVJBM)
 
 ## Requirements
 
