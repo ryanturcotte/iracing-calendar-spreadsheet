@@ -1,5 +1,7 @@
 # iRacing Calendar Spreadsheet Creator
 
+See https://github.com/ryanturcotte/iracing-schedule-viewer for a new version of this tool built for the web.
+
 This PowerShell program scrapes a JSON of iRacing season series data and presents a GUI of all the series available, with the goal to output selected ones to a CSV. A XLSX template is provided that can present 8 series on 1 landscape page. By copying data from the CSV to the included XLSX template, you can build a 12 week iRacing schedule fit for printing in a matter of minutes.
 
 ## Example
